@@ -10,7 +10,8 @@ public class UnsafeIntance {
     public static Unsafe reflectGetUnsafe() {
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);//设置为可访问
+            //设置为可访问
+            field.setAccessible(true);
             return (Unsafe)field.get(null);
 
         } catch (NoSuchFieldException e) {
