@@ -30,6 +30,30 @@ public class Aqs {
     private static ConcurrentLinkedQueue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
 
     /**
+     * 偏移量
+     */
+    private static final long STATEOFFSET;
+    
+    /**
+     *  通过反射获取一个Unsafe实例对象
+     */
+    private static final Unsafe UNSAFE = aqs.UnsafeIntance.reflectGetUnsafe();
+
+    static {
+        try {
+            //获取偏移量
+            STATEOFFSET = UNSAFE.objectFieldOffset(Aqs.class.getDeclaredField("state"));
+        } catch (Exception e) {
+            throw new Error();
+        }
+    }
+
+    //CAS修改 state 字段
+    public final boolean compareAndSetState(int expect, int updata) {
+        return UNSAFE.compareAndSwapInt(this, STATEOFFSET, expect, updata);
+    }
+
+    /**
      * 尝试获取锁
      */
     public boolean aquire() {
@@ -87,29 +111,6 @@ public class Aqs {
                 //就需要唤醒队首线程
                 LockSupport.unpark(first);
             }
-        }
-    }
-
-    public final boolean compareAndSetState(int expect, int updata) {
-        return UNSAFE.compareAndSwapInt(this, STATEOFFSET, expect, updata);
-    }
-
-    /**
-     *  通过反射获取一个Unsafe实例对象
-     */
-    private static final Unsafe UNSAFE = aqs.UnsafeIntance.reflectGetUnsafe();
-
-    /**
-     * 偏移量
-     */
-    private static final long STATEOFFSET;
-
-    static {
-        try {
-            //获取偏移量
-            STATEOFFSET = UNSAFE.objectFieldOffset(Aqs.class.getDeclaredField("state"));
-        } catch (Exception e) {
-            throw new Error();
         }
     }
 }
